@@ -39,16 +39,11 @@ Abra o mesmo `index.html` (ou a URL do GitHub Pages). O canvas se ajusta à tela
 
 ## Jogar online (GitHub Pages)
 
-URL prevista:
+Já no ar:
 
 **https://juliodevenviagora.github.io/flappy-bird-2d/**
 
-O site publica a pasta raiz (`/`) da branch `main`. Se a página ainda não abrir, em **Settings → Pages** do repositório escolha:
-
-1. Source: **Deploy from a branch**
-2. Branch: **`main`**
-3. Folder: **`/` (root)**
-4. Save
+O site publica a pasta raiz (`/`) da branch `main`. Se a página cair, em **Settings → Pages** escolha Deploy from a branch → `main` / `/` (root) → Save.
 
 ## Estrutura
 
