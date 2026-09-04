@@ -104,22 +104,29 @@
     game.pipes = [];
     game.particles = [];
     game.score = 0;
-    game.speed = 2.15;
+    game.speed = 2.2;
     game.spawnAcc = 0;
     game.shake = 0;
     game.flash = 0;
-    game.ready = 0.85;
+    game.ready = 0.4;
   }
 
   function spawnPipe() {
     const first = game.score === 0 && game.pipes.length === 0;
-    const gap = first ? 236 : clamp(200 - game.score * 1.05, 156, 200);
+    const second = game.score === 0 && game.pipes.length === 1;
     const margin = 40;
+    const gap = first
+      ? PLAY_H - 128
+      : second
+        ? 220
+        : clamp(196 - game.score * 1.05, 152, 196);
     const minTop = 78;
     const maxTop = PLAY_H - gap - margin;
     const top = first
-      ? (PLAY_H - gap) * 0.5
-      : rand(minTop, Math.max(minTop + 8, maxTop));
+      ? 0
+      : second
+        ? (PLAY_H - gap) * 0.5
+        : rand(minTop, Math.max(minTop + 8, maxTop));
     game.pipes.push({
       x: W + 36,
       w: 72,
@@ -151,7 +158,7 @@
     if (game.state === STATE.START) {
       resetPlay();
       game.state = STATE.PLAYING;
-      game.bird.vy = -5.45;
+      game.bird.vy = -5.7;
       game.bird.wing = 1;
       audio.flap();
       burst(game.bird.x - 8, game.bird.y + 6, "#fff6d6", 6, 2.4);
@@ -160,13 +167,13 @@
     if (game.state === STATE.OVER) {
       resetPlay();
       game.state = STATE.PLAYING;
-      game.bird.vy = -5.45;
+      game.bird.vy = -5.7;
       game.bird.wing = 1;
       audio.flap();
       return;
     }
     if (game.state === STATE.PLAYING) {
-      game.bird.vy = -5.45;
+      game.bird.vy = -5.7;
       game.bird.wing = 1;
       audio.flap();
       burst(game.bird.x - 8, game.bird.y + 6, "#fff6d6", 5, 2.2);
@@ -235,7 +242,7 @@
     }
 
     game.ready = Math.max(0, game.ready - dt / 1000);
-    bird.vy = Math.min(10.5, bird.vy + 0.3 * t);
+    bird.vy = Math.min(10.5, bird.vy + 0.26 * t);
     bird.y += bird.vy * t;
     bird.rot = clamp(bird.vy * 0.09, -0.5, 1.05);
     bird.wing = Math.max(0, bird.wing - dt / 180);
@@ -264,7 +271,7 @@
         pipe.passed = true;
         game.score += 1;
         audio.score();
-        game.speed = Math.min(3.35, 2.15 + game.score * 0.04);
+        game.speed = Math.min(3.35, 2.2 + game.score * 0.04);
         burst(bird.x + 10, bird.y, "#ffffff", 7, 2.6);
       }
     }
