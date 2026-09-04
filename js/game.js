@@ -77,7 +77,7 @@
     particles: [],
     score: 0,
     best: loadBest(),
-    speed: 2.55,
+    speed: 2.15,
     spawnAcc: 0,
     groundX: 0,
     hillX: 0,
@@ -91,7 +91,7 @@
   function makeBird() {
     return {
       x: 128,
-      y: PLAY_H * 0.42,
+      y: PLAY_H * 0.5,
       r: 16,
       vy: 0,
       rot: 0,
@@ -104,19 +104,29 @@
     game.pipes = [];
     game.particles = [];
     game.score = 0;
-    game.speed = 2.55;
+    game.speed = 2.2;
     game.spawnAcc = 0;
     game.shake = 0;
     game.flash = 0;
-    game.ready = 0.55;
+    game.ready = 0.4;
   }
 
   function spawnPipe() {
-    const gap = clamp(168 - game.score * 1.15, 132, 168);
-    const margin = 36;
-    const minTop = 70;
+    const first = game.score === 0 && game.pipes.length === 0;
+    const second = game.score === 0 && game.pipes.length === 1;
+    const margin = 40;
+    const gap = first
+      ? PLAY_H - 128
+      : second
+        ? 220
+        : clamp(196 - game.score * 1.05, 152, 196);
+    const minTop = 78;
     const maxTop = PLAY_H - gap - margin;
-    const top = rand(minTop, Math.max(minTop + 8, maxTop));
+    const top = first
+      ? 0
+      : second
+        ? (PLAY_H - gap) * 0.5
+        : rand(minTop, Math.max(minTop + 8, maxTop));
     game.pipes.push({
       x: W + 36,
       w: 72,
@@ -148,7 +158,7 @@
     if (game.state === STATE.START) {
       resetPlay();
       game.state = STATE.PLAYING;
-      game.bird.vy = -7.6;
+      game.bird.vy = -5.7;
       game.bird.wing = 1;
       audio.flap();
       burst(game.bird.x - 8, game.bird.y + 6, "#fff6d6", 6, 2.4);
@@ -157,13 +167,13 @@
     if (game.state === STATE.OVER) {
       resetPlay();
       game.state = STATE.PLAYING;
-      game.bird.vy = -7.6;
+      game.bird.vy = -5.7;
       game.bird.wing = 1;
       audio.flap();
       return;
     }
     if (game.state === STATE.PLAYING) {
-      game.bird.vy = -7.6;
+      game.bird.vy = -5.7;
       game.bird.wing = 1;
       audio.flap();
       burst(game.bird.x - 8, game.bird.y + 6, "#fff6d6", 5, 2.2);
@@ -213,7 +223,7 @@
     }
 
     if (game.state === STATE.START) {
-      bird.y = PLAY_H * 0.42 + Math.sin(performance.now() / 280) * 8;
+      bird.y = PLAY_H * 0.5 + Math.sin(performance.now() / 280) * 8;
       bird.vy = 0;
       bird.rot = -0.12;
       bird.wing = (Math.sin(performance.now() / 140) + 1) / 2;
@@ -221,7 +231,7 @@
     }
 
     if (game.state === STATE.OVER) {
-      bird.vy = Math.min(14, bird.vy + 0.48 * t);
+      bird.vy = Math.min(12, bird.vy + 0.32 * t);
       bird.y += bird.vy * t;
       bird.rot = lerp(bird.rot, 1.15, 0.12);
       if (bird.y > PLAY_H - bird.r) {
@@ -232,9 +242,9 @@
     }
 
     game.ready = Math.max(0, game.ready - dt / 1000);
-    bird.vy = Math.min(13, bird.vy + 0.42 * t);
+    bird.vy = Math.min(10.5, bird.vy + 0.26 * t);
     bird.y += bird.vy * t;
-    bird.rot = clamp(bird.vy * 0.085, -0.55, 1.15);
+    bird.rot = clamp(bird.vy * 0.09, -0.5, 1.05);
     bird.wing = Math.max(0, bird.wing - dt / 180);
 
     if (bird.y - bird.r < 0) {
@@ -249,7 +259,7 @@
 
     if (game.ready <= 0) {
       game.spawnAcc += game.speed * t;
-      if (game.pipes.length === 0 || game.spawnAcc >= 196) {
+      if (game.pipes.length === 0 || game.spawnAcc >= 230) {
         spawnPipe();
         game.spawnAcc = 0;
       }
@@ -261,13 +271,13 @@
         pipe.passed = true;
         game.score += 1;
         audio.score();
-        game.speed = Math.min(3.7, 2.55 + game.score * 0.045);
+        game.speed = Math.min(3.35, 2.2 + game.score * 0.04);
         burst(bird.x + 10, bird.y, "#ffffff", 7, 2.6);
       }
     }
     game.pipes = game.pipes.filter((p) => p.x + p.w > -40);
 
-    const hitR = bird.r - 3;
+    const hitR = bird.r - 5;
     for (const pipe of game.pipes) {
       const topH = pipe.top;
       const botY = pipe.top + pipe.gap;
@@ -657,4 +667,31 @@
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
+
+  window.__flappy = {
+    get state() {
+      return game.state;
+    },
+    get score() {
+      return game.score;
+    },
+    get best() {
+      return game.best;
+    },
+    snapshot() {
+      return {
+        state: game.state,
+        score: game.score,
+        y: game.bird ? Math.round(game.bird.y) : null,
+        vy: game.bird ? Number(game.bird.vy.toFixed(2)) : null,
+        pipes: game.pipes.map((p) => ({
+          x: Math.round(p.x),
+          top: Math.round(p.top),
+          gap: Math.round(p.gap),
+          bot: Math.round(p.top + p.gap),
+        })),
+      };
+    },
+    flap,
+  };
 })();
